@@ -8,7 +8,7 @@ export const list = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
 
-    const userId = identity.subject as Id<"users">;
+    const userId = identity.subject.split("|")[0] as Id<"users">;
     const memberships = await ctx.db
       .query("memberships")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -33,9 +33,9 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
-
-    const userId = identity.subject as Id<"users">;
-    
+    console.log("identity", identity);
+    const userId = identity.subject.split("|")[0] as Id<"users">;
+    console.log("userId", userId);
     // Create the organization
     const orgId = await ctx.db.insert("organizations", {
       name: args.name,
@@ -45,6 +45,7 @@ export const create = mutation({
       adminIds: [userId],
       createdAt: Date.now(),
     });
+    
 
     // Create owner membership
     await ctx.db.insert("memberships", {
