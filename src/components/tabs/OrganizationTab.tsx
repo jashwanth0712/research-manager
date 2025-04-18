@@ -7,6 +7,11 @@ export function OrganizationTab() {
   const user = useQuery(api.auth.getUserId);
   const organizations = useQuery(api.organizations.list);
   const createOrganization = useMutation(api.organizations.create);
+  // TODO : CRUD for organizations
+  // TODO : Invite users to organizations
+  // TODO : CRUD for research groups
+  // TODO : CRUD for memberships
+  // TODO : Invite users to research groups
   const handleClick = async () => {
     await createOrganization({
       name: "Test",

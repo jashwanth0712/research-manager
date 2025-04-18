@@ -63,7 +63,6 @@ const applicationTables = {
     .index("by_group", ["groupId"])
     .index("by_contributor", ["contributorIds"]),
 
-  // ... rest of the tables remain the same
 };
 
 export default defineSchema({
