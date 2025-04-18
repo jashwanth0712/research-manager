@@ -1,8 +1,12 @@
 import { Search, Bell, ChevronDown } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 export function Navbar() {
+  const { signOut } = useAuthActions();
+  const organizations = useQuery(api.organizations.list);
+  const projects = useQuery(api.projects.list);
   const user = useQuery(api.auth.loggedInUser);
 
   return (
@@ -20,10 +24,23 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <select className="border border-gray-200 rounded-lg px-3 py-2">
             <option>Select Organization</option>
+            {organizations?.map((org) => (
+              <option key={org.id} value={org.id}>{org.name}</option>
+            ))}
+            {organizations?.length === 0 && <option>No organizations yet</option>}
           </select>
-          <select className="border border-gray-200 rounded-lg px-3 py-2">
-            <option>Select Project</option>
-          </select>
+          {projects?.length > 0 ? (
+            <select className="border border-gray-200 rounded-lg px-3 py-2">
+              <option>Select Project</option>
+              {projects?.map((project) => (
+                <option key={project.id} value={project.id}>{project.name}</option>
+              ))}
+            </select>
+          ) : (
+            <select className="border border-gray-200 rounded-lg px-3 py-2">
+              <option>No projects yet</option>
+            </select>
+          )}
         </div>
       </div>
 
@@ -35,7 +52,7 @@ export function Navbar() {
           </span>
         </button>
 
-        <button className="flex items-center gap-2">
+        <button onClick={signOut} className="flex items-center gap-2">
           <img
             src={user?.image ?? "https://via.placeholder.com/32"}
             alt="Profile"

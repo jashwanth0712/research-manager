@@ -62,7 +62,18 @@ const applicationTables = {
     .index("by_organization", ["organizationId"])
     .index("by_group", ["groupId"])
     .index("by_contributor", ["contributorIds"]),
-
+    users: defineTable({
+      name: v.optional(v.string()),
+      image: v.optional(v.string()),
+      email: v.optional(v.string()),
+      emailVerificationTime: v.optional(v.number()),
+      phone: v.optional(v.string()),
+      phoneVerificationTime: v.optional(v.number()),
+      isAnonymous: v.optional(v.boolean()),
+      presentOrganization: v.optional(v.id("organizations")),
+      presentProject: v.optional(v.id("projects")),
+      // other "users" fields...
+    }).index("email", ["email"]),
 };
 
 export default defineSchema({
