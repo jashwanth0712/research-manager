@@ -1,5 +1,5 @@
 import { Search, Bell, ChevronDown } from "lucide-react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 
@@ -8,6 +8,8 @@ export function Navbar() {
   const organizations = useQuery(api.organizations.list);
   const projects = useQuery(api.projects.list);
   const user = useQuery(api.auth.loggedInUser);
+  const setPresentOrganization = useMutation(api.user.setPresentOrganization);
+  const setPresentProject = useMutation(api.user.setPresentProject);
 
   return (
     <div className="h-16 border-b border-gray-200 px-4 flex items-center gap-4 bg-white">
@@ -22,24 +24,39 @@ export function Navbar() {
         </div>
         
         <div className="flex items-center gap-2">
-          <select className="border border-gray-200 rounded-lg px-3 py-2">
-            <option>Select Organization</option>
-            {organizations?.map((org) => (
-              <option key={org.id} value={org.id}>{org.name}</option>
-            ))}
-            {organizations?.length === 0 && <option>No organizations yet</option>}
-          </select>
-          {projects?.length > 0 ? (
-            <select className="border border-gray-200 rounded-lg px-3 py-2">
-              <option>Select Project</option>
-              {projects?.map((project) => (
-                <option key={project.id} value={project.id}>{project.name}</option>
+          {organizations?.length > 0 ? (
+            <select className="border border-gray-200 rounded-lg px-3 py-2" onChange={async (e) => {
+              const orgId = e.target.value;
+              if (orgId) {
+                await setPresentOrganization({ organizationId: orgId });
+              }
+            }}>
+              <option>Select Organization</option>
+              {organizations?.map((org) => (
+                <option key={org._id} value={org._id} selected={org._id === user?.presentOrganization}>{org.name}</option>
               ))}
             </select>
           ) : (
-            <select className="border border-gray-200 rounded-lg px-3 py-2">
-              <option>No projects yet</option>
+            <div className="border border-gray-200 rounded-lg px-3 py-2">
+              <p className="text-gray-500">No organizations yet</p>
+            </div>
+          )}
+          {projects?.length > 0 ? (
+            <select className="border border-gray-200 rounded-lg px-3 py-2" onChange={async (e) => {
+              const projectId = e.target.value;
+              if (projectId) {
+                await setPresentProject({ projectId: projectId });
+              }
+            }}>
+              <option>Select Project</option>
+              {projects?.map((project) => (
+                <option key={project._id} value={project._id} selected={project._id === user?.presentProject}>{project.name}</option>
+              ))}
             </select>
+          ) : (
+            <div className="border border-gray-200 rounded-lg px-3 py-2">
+              <p className="text-gray-500">No projects yet</p>
+            </div>
           )}
         </div>
       </div>

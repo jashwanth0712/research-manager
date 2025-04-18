@@ -13,6 +13,7 @@ export function OrganizationTab() {
   // TODO : Invite users to organizations
   // TODO : CRUD for research groups
   // TODO : CRUD for memberships
+  // TODO : CRUD for projects
   // TODO : Invite users to research groups
   const handleClick = async () => {
     await createOrganization({
