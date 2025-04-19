@@ -144,3 +144,74 @@ export const acceptInvite = mutation({
     return invitation.organizationId;
   },
 });
+
+
+export const remove = mutation({
+  args: {
+    organizationId: v.id("organizations"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const userId = identity.subject.split("|")[0] as Id<"users">;
+
+    // Ensure the user has permission to delete the organization
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("organizationId"), args.organizationId))
+      .unique();
+
+    if (!membership || !["owner", "admin"].includes(membership.role)) {
+      throw new Error("Not authorized to delete this organization");
+    }
+
+    // Delete all memberships
+    const memberships = await ctx.db
+      .query("memberships")
+      .withIndex("by_org", (q) => q.eq("organizationId", args.organizationId))
+      .collect();
+    for (const member of memberships) {
+      await ctx.db.delete(member._id);
+    }
+
+    // Delete all invitations
+    const invitations = await ctx.db
+      .query("invitations")
+      .withIndex("by_org", (q) => q.eq("organizationId", args.organizationId))
+      .collect();
+    for (const invite of invitations) {
+      await ctx.db.delete(invite._id);
+    }
+
+    // Delete all projects
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_organization", (q) =>
+        q.eq("organizationId", args.organizationId)
+      )
+      .collect();
+    for (const project of projects) {
+      await ctx.db.delete(project._id);
+    }
+
+    // Delete all research groups
+    const groups = await ctx.db
+      .query("researchGroups")
+      .withIndex("by_organization", (q) =>
+        q.eq("organizationId", args.organizationId)
+      )
+      .collect();
+    for (const group of groups) {
+      await ctx.db.delete(group._id);
+    }
+
+    // Finally, delete the organization itself
+    await ctx.db.delete(args.organizationId);
+
+    return { success: true };
+  },
+});
+
+
